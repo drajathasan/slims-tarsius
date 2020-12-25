@@ -2,7 +2,7 @@
     "name": "drajat/slims-tarsius",
     "description": "Tool for development process in SLiMS",
     "type": "tools",
-    "license": "GPLv3",
+    "license": "GPL-3.0",
     "authors": [
         {
             "name": "Drajat Hasan",
