@@ -19,8 +19,8 @@
         }
     },
     "scripts": {
-        "post-create-project-cmd": [
-            "@php -r \"echo __DIR__;\""
+	"post-update-cmd": [
+	  "php -r \"copy(__DIR__.'/vendor/drajat/slims-tarsius/tests/tarsius', __DIR__.'/tarsius');\""		
         ]	
     }
 }
