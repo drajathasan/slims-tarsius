@@ -37,7 +37,14 @@ class Parser
             else
             {
                 $value = explode(':', $value);
-                $this->arguments[$map[$id]] =  [str_replace('-', '', $value[0]), $value[1]];
+                if (isset($value[0]) && isset($value[1])) 
+                {
+                    $this->arguments[$map[$id]] =  [str_replace('-', '', $value[0]), $value[1]];
+                }
+                else
+                {
+                    \SLiMSTarsius\Docgenerator::firstMeet(); exit;
+                }
             }
             unset($this->arguments[$id]);
         }

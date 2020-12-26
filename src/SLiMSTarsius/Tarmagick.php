@@ -3,7 +3,7 @@
  * @author Drajat Hasan
  * @email drajathasan20@gmail.com
  * @create date 2020-12-26 17:02:45
- * @modify date 2020-12-26 17:03:16
+ * @modify date 2020-12-27 00:20:21
  */
 
 namespace SLiMSTarsius;
@@ -17,7 +17,21 @@ class Tarmagick
     public static function plugin($action)
     {
         self::getEnvironment(self::$dir);
-        echo (new \SLiMSTarsius\Plugin(self::$environment))->$action(self::$dir, self::$parameter);
+
+        try {
+            $Plugin = new \SLiMSTarsius\Plugin(self::$environment);
+
+            if (method_exists($Plugin, $action))
+            {
+                $Plugin->$action(self::$dir, self::$parameter);
+            }
+            else
+            {
+                throw new \ErrorException($action);
+            }
+        } catch (\ErrorException $e) {
+            \SLiMSTarsius\Docgenerator::failedMsg("Metode {pointMsg} tidak ada!", $e->getMessage());
+        }
     }
 
     public static function module($action)
@@ -60,14 +74,10 @@ class Tarmagick
                 self::$parameter = $parser->arguments['parameter'];
                 return self::$method($parser->arguments['method'][1]);
             }
-            else
-            {
-                echo "Metode tidak tersedia!";
-            }
         }
         else
         {
-            echo "Hai, ini tarsius perkakas pengemban untuk SLiMS :D \n";
+            \SLiMSTarsius\Docgenerator::firstMeet();
         }
     }
 }

@@ -3,10 +3,12 @@
  * @author Drajat Hasan
  * @email drajathasan20@gmail.com
  * @create date 2020-12-26 17:02:45
- * @modify date 2020-12-26 17:03:16
+ * @modify date 2020-12-27 00:20:27
  */
 
 namespace SLiMSTarsius;
+
+use \SLiMSTarsius\Docgenerator as dg;
 
 class Plugin
 {
@@ -26,7 +28,7 @@ class Plugin
                            'version' => 'Version (Minimal gunakan semantic versioning)', 
                            'author' => 'Author (Pembuat)', 
                            'author_uri' => 'Author URI (Halaman profil pembuat)',
-                           'target_module' => 'Modul tujuan?',
+                           'target_module' => 'Modul tujuan',
                            'label_menu' => 'Teks yang muncul di Menu?'
                           ];
 
@@ -35,13 +37,13 @@ class Plugin
         
         if (count($pluginName) > 1)
         {
-            die("Hanya bisa membuat 1 plugin dalam 1 perintah!\n");
+            dg::failedMsg("{pointMsg}", 'Hanya bisa membuat 1 plugin dalam 1 perintah!');
         }
 
         $pluginName = $pluginName[0];
 
         // set message
-        echo 'Membuat plugin '.$pluginName."\n";
+        echo "\nMembuat plugin \e[36m$pluginName\033[0m\n\n";
         // get information and make plugin
         $this->makeInteractive($interactiveMap)
              ->makePlugin($pluginName, $destinantion, $template);
@@ -52,7 +54,7 @@ class Plugin
         if (is_array($label))
         {
             foreach ($label as $key => $question) {
-                echo $question.' plugin? [tuliskan] ';
+                echo "\e[1m$question plugin?\033[0m [tuliskan] ";
                 $this->interactiveResponse[$key] = trim(fgets(STDIN));
             }
 
@@ -60,7 +62,7 @@ class Plugin
         }
         else
         {
-            die('Label harus Array!');
+            dg::failedMsg("{pointMsg} harus Array!", 'Label');
         }
     }
 
@@ -78,8 +80,18 @@ class Plugin
                 $this->interactiveResponse['date_created'] = date('Y-m-d H:i:s');
 
                 foreach ($this->interactiveResponse as $key => $value) {
-                    $dotPlugin = str_replace('{'.$key.'}', $value, $dotPlugin);
-                    $indexPlugin = str_replace('{'.$key.'}', $value, $indexPlugin);
+                    if (!empty(trim($this->interactiveResponse[$key])))
+                    {
+                        $dotPlugin = str_replace('{'.$key.'}', $value, $dotPlugin);
+                        $indexPlugin = str_replace('{'.$key.'}', $value, $indexPlugin);
+                    }
+                    else
+                    {
+                        // remove directory
+                        rmdir($destDir.$pluginName);
+                        // set message
+                        dg::failedMsg("Parameter {pointMsg} tidak boleh kosong!", $key);
+                    }
                 }
 
                 try {
@@ -89,20 +101,20 @@ class Plugin
 
                     if ($dotPlugin && $indexPlugin)
                     {
-                        echo "Berhasil membuat plugin $pluginName \n";
+                        dg::successMsg("{pointMsg}", "\nBerhasil membuat plugin $pluginName");
                     }
                 } catch (\ErrorException $e) {
-                    die("Gagal membuat plugin $pluginName : \n ".$e->getMessage());
+                    dg::failedMsg("Gagal membuat plugin {pointMsg} : $e->getMessage()", $pluginName);
                 }
             }
             else
             {
-                die('Gagal membuat direktori plugin!');
+                dg::failedMsg("{pointMsg}", "Gagal membuat direktori plugin");
             }
         }
         else
         {
-            die('Plugin sudah ada. Ingin membuat plugin lagi? Hapus plugin yang sudah ada.'."\n");
+            dg::failedMsg("{pointMsg}", "Plugin sudah ada. Ingin membuat plugin lagi? Hapus plugin yang sudah ada.");
         }
     }
 }
