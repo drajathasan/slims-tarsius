@@ -1,0 +1,15 @@
+<?php
+/**
+ * Plugin Name: {plugin_name}
+ * Plugin URI: {plugin_uri}
+ * Description: {description}
+ * Version: {version}
+ * Author: {author_uri}
+ * Author URI: {label_menu}
+ */
+
+// get plugin instance
+$plugin = \SLiMS\Plugins::getInstance();
+
+// registering menus
+$plugin->registerMenu('{target_module}', '{label_menu}', __DIR__ . '/index.php');
