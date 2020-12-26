@@ -4,8 +4,8 @@
  * Plugin URI: {plugin_uri}
  * Description: {description}
  * Version: {version}
- * Author: {author_uri}
- * Author URI: {label_menu}
+ * Author: {author}
+ * Author URI: {author_uri}
  */
 
 // get plugin instance

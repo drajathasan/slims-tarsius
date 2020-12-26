@@ -32,7 +32,7 @@ class Parser
         foreach ($this->arguments as $id => $value) {
             if ($id > 1)
             {
-                $this->arguments[$map[2]] =  $value;
+                $this->arguments[$map[2]][] =  $value;
             }
             else
             {

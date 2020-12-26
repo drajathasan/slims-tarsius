@@ -1,7 +1,7 @@
 <?php
 /**
- * @Created by          : {author}
- * @Date                : {date_created}
+ * @Created by          : Drajat Hasan
+ * @Date                : 2020-12-26 21:30:57
  * @File name           : index.php
  */
 
@@ -10,7 +10,7 @@ defined('INDEX_AUTH') OR die('Direct access not allowed!');
 // IP based access limitation
 require LIB . 'ip_based_access.inc.php';
 do_checkIP('smc');
-do_checkIP('smc-{target_module}');
+do_checkIP('smc-bibliography');
 // start the session
 require SB . 'admin/default/session.inc.php';
 require SIMBIO . 'simbio_GUI/table/simbio_table.inc.php';
@@ -19,7 +19,7 @@ require SIMBIO . 'simbio_GUI/paging/simbio_paging.inc.php';
 require SIMBIO . 'simbio_DB/datagrid/simbio_dbgrid.inc.php';
 
 // privileges checking
-$can_read = utility::havePrivilege('{target_module}', 'r');
+$can_read = utility::havePrivilege('bibliography', 'r');
 
 if (!$can_read) {
     die('<div class="errorBox">' . __('You are not authorized to view this section') . '</div>');
@@ -30,7 +30,7 @@ function httpQuery($query = [])
     return http_build_query(array_unique(array_merge($_GET, $query)));
 }
 
-$page_title = '{label_menu}';
+$page_title = 'Buku Induk';
 
 /* Action Area */
 

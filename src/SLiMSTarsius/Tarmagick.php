@@ -39,8 +39,7 @@ class Tarmagick
     {
         if (file_exists($dir.'/sysconfig.inc.php'))
         {
-            include_once $dir.'/sysconfig.inc.php';
-            self::$environment = ENVIRONMENT;
+            self::$environment = 'development';
         }
         else
         {

@@ -33,10 +33,12 @@ class Plugin
         $destinantion = ($this->env === 'development_src')?$dest.'/tests/plugins/':$dest.'/plugins/';
         $template = ($this->env === 'development_src')?$dest.'/tests/template/':$dest.'/vendor/drajat/slims-tarsius/tests/template/';
         
-        if (count(explode(' ', trim($pluginName))) > 1)
+        if (count($pluginName) > 1)
         {
-            die('Hanya bisa membuat 1 plugin dalam 1 perintah!');
+            die("Hanya bisa membuat 1 plugin dalam 1 perintah!\n");
         }
+
+        $pluginName = $pluginName[0];
 
         // set message
         echo 'Membuat plugin '.$pluginName."\n";
