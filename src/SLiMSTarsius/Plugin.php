@@ -31,7 +31,7 @@ class Plugin
                           ];
 
         $destinantion = ($this->env === 'development_src')?$dest.'/tests/plugins/':$dest.'/plugins/';
-        $template = ($this->env === 'development_src')?$dest.'/tests/template/':$dest.'/template/';
+        $template = ($this->env === 'development_src')?$dest.'/tests/template/':$dest.'/vendor/drajat/slims-tarsius/tests/template/';
         
         if (count(explode(' ', trim($pluginName))) > 1)
         {

@@ -16,7 +16,7 @@ class Tarmagick
 
     public static function plugin($action)
     {
-        self::getEnvironment();
+        self::getEnvironment(self::$dir);
         echo (new \SLiMSTarsius\Plugin(self::$environment))->$action(self::$dir, self::$parameter);
     }
 
@@ -35,11 +35,11 @@ class Tarmagick
         echo "Fitur akan hadir di masa mendatang :D, stay tune ya! \n";
     }
 
-    public static function getEnvironment()
+    public static function getEnvironment($dir)
     {
-        if (file_exists(__DIR__.'/sysconfig.inc.php'))
+        if (file_exists($dir.'/sysconfig.inc.php'))
         {
-            include_once __DIR__.'/sysconfig.inc.php';
+            include_once $dir.'/sysconfig.inc.php';
             self::$environment = ENVIRONMENT;
         }
         else
