@@ -1,0 +1,13 @@
+#!/usr/bin/env php
+<?php
+
+// prevent access from web
+if (PHP_SAPI !== 'cli') {
+    echo "Tarsius";
+    exit;
+}
+
+// Autoloader
+require __DIR__.'/vendor/autoload.php';
+
+$tarsius = SLiMSTarsius\Tarmagick::startup(__DIR__);

@@ -1,3 +1,4 @@
 vendor/
 composer.lock
 tarsius
+!tests/tarsius
