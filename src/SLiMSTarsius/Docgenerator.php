@@ -4,7 +4,7 @@
  * @email drajathasan20@gmail.com
  * @create date 2020-12-26 23:23:54
  * @modify date 2020-12-27 00:20:24
- * @desc [description]
+ * @desc Document and Infromation generator
  */
 
 namespace SLiMSTarsius;
@@ -13,13 +13,14 @@ class Docgenerator
 {
     public static function banner()
     {
+    // generate by figlet
 echo " _____              _           
 |_   _|_ _ _ __ ___(_)_   _ ___ 
   | |/ _` | '__/ __| | | | / __|
   | | (_| | |  \__ \ | |_| \__ \
   |_|\__,_|_|  |___/_|\__,_|___/                                            
 ";
-                echo "\t\t\t v1.1.0 \n";
+                echo "\t\t\t v1.2.0 \n";
     }
     public static function firstMeet()
     {
@@ -41,11 +42,11 @@ echo " _____              _
         /* Plugin */
         echo "\n\e[36m  --plugin \033[0m";
         echo "\n\e[32m   --plugin:create \033[0m\tMembuat kerangka dasar plugin (mode non-hook)";
+        echo "\n\e[32m   --plugin:list \033[0m\tMenampilkan plugin tersedia";
+        echo "\n\e[32m   --plugin:info \033[0m\tMenampilkan informasi plugin";
         echo "\n\e[32m   --plugin:enable \033[0m\tMengaktifkan plugin (fitur mendatang)";
         echo "\n\e[32m   --plugin:disable \033[0m\tMeng-non-aktifkan plugin (fitur mendatang)";
         echo "\n\e[32m   --plugin:delete \033[0m\tMenghapus plugin (fitur mendatang)";
-        echo "\n\e[32m   --plugin:list \033[0m\tMenampilkan plugin tersedia (fitur mendatang)";
-        echo "\n\e[32m   --plugin:info \033[0m\tMenampilkan informasi plugin (fitur mendatang)\n";
         /* Module */
         echo "\n\e[36m  --module \033[0m";
         echo "\n\e[32m   --module:create \033[0m\tMembuat kerangka dasar module (fitur mendatang)";
@@ -61,6 +62,31 @@ echo " _____              _
         echo "\n";
         
         echo "  php tarsius --plugin:create buku_induk\n";
+        echo "\n";
+    }
+
+    public static function list($label, $data, $heading = '')
+    {
+        echo "\n\e[33m $label \033[0m\n\n";
+        echo $heading;
+        echo " --------------------------------------------------------------------------------------------------------\n";
+        foreach ($data as $key => $content) {
+            $key = $key + 1;
+            echo " $key. $content[0]\t$content[2]\t$content[1]\n";
+        }
+        $numPlugin = count($data);
+        echo " --------------------------------------------------------------------------------------------------------\n";
+        echo "\n Ditemukan \e[1m$numPlugin\033[0m plugin\n";
+        echo "\n";
+    }
+
+    public static function info($label, $data, $heading = '')
+    {
+        echo "\n\e[33m $label \033[0m\n\n";
+        echo $heading;
+        foreach ($data as $key => $content) {
+            echo " $content[0]\n";
+        }
         echo "\n";
     }
 

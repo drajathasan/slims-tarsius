@@ -9,5 +9,7 @@ if (PHP_SAPI !== 'cli') {
 
 // Autoloader
 require __DIR__.'/vendor/autoload.php';
+// set global constant
+define('DIR', __DIR__);
 
-$tarsius = SLiMSTarsius\Tarmagick::startup(__DIR__);
+$tarsius = SLiMSTarsius\Tarmagick::startup(DIR);

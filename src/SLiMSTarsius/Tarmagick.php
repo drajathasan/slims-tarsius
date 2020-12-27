@@ -8,6 +8,10 @@
 
 namespace SLiMSTarsius;
 
+// for production, comment if on development process
+@ini_set('display_errors', false);
+@error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT & ~E_USER_NOTICE & ~E_USER_DEPRECATED);
+
 class Tarmagick
 {
     public static $parameter;

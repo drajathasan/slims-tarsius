@@ -13,10 +13,12 @@ do_checkIP('smc');
 do_checkIP('smc-{target_module}');
 // start the session
 require SB . 'admin/default/session.inc.php';
+// set dependency
 require SIMBIO . 'simbio_GUI/table/simbio_table.inc.php';
 require SIMBIO . 'simbio_GUI/form_maker/simbio_form_table_AJAX.inc.php';
 require SIMBIO . 'simbio_GUI/paging/simbio_paging.inc.php';
 require SIMBIO . 'simbio_DB/datagrid/simbio_dbgrid.inc.php';
+// end dependency
 
 // privileges checking
 $can_read = utility::havePrivilege('{target_module}', 'r');
@@ -56,5 +58,78 @@ $page_title = '{label_menu}';
 
 <?php
 /* Datagrid area */
+/**
+ * table spec
+ * ---------------------------------------
+ * Tuliskan nama tabel pada variabel $table_spec. Apabila anda 
+ * ingin melakukan pegabungan banyak tabel, maka anda cukup menulis kan
+ * nya saja layak nya membuat query seperti biasa
+ *
+ * Contoh :
+ * - dummy_plugin as dp left join non_dummy_plugin as ndp on dp.id = ndp.id ... dst
+ *
+ */
+$table_spec = 'dummy_plugin';
 
-/* End datagird */
+// membuat datagrid
+$datagrid = new simbio_datagrid();
+
+/** 
+ * Menyiapkan kolom
+ * -----------------------------------------
+ * Format penulisan sama seperti anda menuliskan di query pada phpmyadmin/adminer/yang lain,
+ * hanya di SLiMS anda diberikan beberapa opsi seperti, penulisan dengan gaya multi parameter,
+ * dan gaya single parameter.
+ *
+ * Contoh :
+ * - Single Parameter : $datagrid->setSQLColumn('id', 'kolom1, kolom2, kolom3'); // penulisan langsung
+ * - Single Parameter : $datagrid->setSQLColumn('id', 'kolom1', 'kolom2', 'kolom3'); // penulisan secara terpisah
+ *
+ * Catatan :
+ * - Jangan lupa menyertakan kolom yang bersifat PK (Primary Key) / FK (Foreign Key) pada urutan pertama,
+ *   karena kolom tersebut digunakan untuk pengait pada proses lain.
+ */
+ $datagrid->setSQLColumn('id, kolom1, kolom2, kolom3');
+
+/** 
+ * Pencarian data
+ * ------------------------------------------
+ * Bagian ini tidak lepas dari nama kolom dari tabel yang digunakan.
+ * Jadi, untuk pencarian yang lebih banyak anda dapat menambahkan kolom pada variabel
+ * $criteria
+ *
+ * Contoh :
+ * - $criteria = ' kolom1 = "'.$keywords.'" OR kolom2 = "'.$keywords.'" OR kolom3 = "'.$keywords.'"';
+ * - atau anda bisa menggunakan query anda.
+ */
+ if (isset($_GET['keywords']) AND $_GET['keywords']) 
+ {
+     $keywords = utility::filterData('keywords', 'get', true, true, true);
+     $criteria = ' kolom1 = "'.$keywords.'"';
+     // jika ada keywords maka akan disiapkan criteria nya
+     $datagrid->setSQLCriteria($criteria);
+ }
+
+/** 
+ * Atribut tambahan
+ * --------------------------------------------
+ * Pada bagian ini anda dapat menentukan atribut yang akan muncul pada datagrid
+ * seperti judul tombol, dll
+ */
+// set table and table header attributes
+$datagrid->icon_edit = SWB.'admin/'.$sysconf['admin_template']['dir'].'/'.$sysconf['admin_template']['theme'].'/edit.gif';
+$datagrid->table_name = 'memberList';
+$datagrid->table_attr = 'id="dataList" class="s-table table"';
+$datagrid->table_header_attr = 'class="dataListHeader" style="font-weight: bold;"';
+// set delete proccess URL
+$datagrid->chbox_form_URL = $_SERVER['PHP_SELF'];
+
+// put the result into variables
+$datagrid_result = $datagrid->createDataGrid($dbs, $table_spec, 20, false); // object database, spesifikasi table, jumlah data yang muncul, boolean penentuan apakah data tersebut dapat di edit atau tidak.
+if (isset($_GET['keywords']) AND $_GET['keywords']) {
+    $msg = str_replace('{result->num_rows}', $datagrid->num_rows, __('Found <strong>{result->num_rows}</strong> from your keywords'));
+    echo '<div class="infoBox">' . $msg . ' : "' . htmlspecialchars($_GET['keywords']) . '"<div>' . __('Query took') . ' <b>' . $datagrid->query_time . '</b> ' . __('second(s) to complete') . '</div></div>';
+}
+// menampilkan datagrid
+echo $datagrid_result;
+/* End datagrid */
