@@ -7,6 +7,7 @@
  */
 
 namespace SLiMSTarsius;
+use SLiMSTarsius\{Plugin,Migration,Parser,Docgenerator};
 
 // for production, comment if on development process
 @ini_set('display_errors', false);
@@ -23,7 +24,7 @@ class Tarmagick
         self::getEnvironment(self::$dir);
 
         try {
-            $Plugin = new \SLiMSTarsius\Plugin(self::$environment);
+            $Plugin = new Plugin(self::$environment);
 
             if (method_exists($Plugin, $action))
             {
@@ -34,7 +35,27 @@ class Tarmagick
                 throw new \ErrorException($action);
             }
         } catch (\ErrorException $e) {
-            \SLiMSTarsius\Docgenerator::failedMsg("Metode {pointMsg} tidak ada!", $e->getMessage());
+            Docgenerator::failedMsg("Metode {pointMsg} tidak ada!", $e->getMessage());
+        }
+    }
+
+    public static function migration($action)
+    {
+        self::getEnvironment(self::$dir);
+        
+        try {
+            $Migration = new Migration(self::$environment);
+
+            if (method_exists($Migration, $action))
+            {
+                $Migration->$action(self::$dir, self::$parameter);
+            }
+            else
+            {
+                throw new \ErrorException($action);
+            }
+        } catch (\ErrorException $e) {
+            Docgenerator::failedMsg("Metode {pointMsg} tidak ada!", $e->getMessage());
         }
     }
 
@@ -67,7 +88,7 @@ class Tarmagick
 
     public static function startup($mainDirectory)
     {
-        $parser = (new \SLiMSTarsius\Parser())->compile();
+        $parser = (new Parser())->compile();
 
         if (count($parser->arguments) > 0)
         {
@@ -81,7 +102,7 @@ class Tarmagick
         }
         else
         {
-            \SLiMSTarsius\Docgenerator::firstMeet();
+            Docgenerator::firstMeet();
         }
     }
 }
