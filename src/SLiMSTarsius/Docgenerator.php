@@ -44,9 +44,6 @@ echo " _____              _
         echo "\n\e[32m   --plugin:create \033[0m\tMembuat kerangka dasar plugin (mode non-hook)";
         echo "\n\e[32m   --plugin:list \033[0m\tMenampilkan plugin tersedia";
         echo "\n\e[32m   --plugin:info \033[0m\tMenampilkan informasi plugin";
-        echo "\n\e[32m   --plugin:enable \033[0m\tMengaktifkan plugin (fitur mendatang)";
-        echo "\n\e[32m   --plugin:disable \033[0m\tMeng-non-aktifkan plugin (fitur mendatang)";
-        echo "\n\e[32m   --plugin:delete \033[0m\tMenghapus plugin (fitur mendatang)";
         /* Module */
         echo "\n\e[36m  --module \033[0m";
         echo "\n\e[32m   --module:create \033[0m\tMembuat kerangka dasar module (fitur mendatang)";

@@ -48,7 +48,6 @@ class Parser
             }
             unset($this->arguments[$id]);
         }
-
         return $this;
     }
 }
