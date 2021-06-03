@@ -3,7 +3,7 @@
  * @author Drajat Hasan
  * @email drajathasan20@gmail.com
  * @create date 2020-12-26 23:23:54
- * @modify date 2020-12-27 00:20:24
+ * @modify date 2021-06-03 22:05:51
  * @desc Document and Infromation generator
  */
 
@@ -20,7 +20,7 @@ echo " _____              _
   | | (_| | |  \__ \ | |_| \__ \
   |_|\__,_|_|  |___/_|\__,_|___/                                            
 ";
-                echo "\t\t\t v1.2.0 \n";
+                echo "\t\t\t v1.2.2 \n";
     }
     public static function firstMeet()
     {
