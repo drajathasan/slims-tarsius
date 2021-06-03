@@ -24,15 +24,30 @@ class Plugin
 {
     public $env;
     public $interactiveResponse;
+    public $template = 'index-plugin';
     
-    public function __construct($env)
+    /**
+     * Contructor
+     *
+     * @param string $env
+     * @return	@return Contructor
+     */
+    public function __construct(string $env)
     {
         @date_default_timezone_set('Asia/Jakarta');
         $this->env = $env;
     }
 
-    public function create($dest, $pluginName)
+    /**
+     * Create Plugin
+     *
+     * @param string $dest
+     * @param string $pluginName
+     * @return void
+     */
+    public function create(string $dest, array $parameter)
     {
+        // setup interactive question
         $interactiveMap = ['plugin_uri' => 'Plugin URI (Alamat website)', 
                            'description' => 'Description', 
                            'version' => 'Version (Minimal gunakan semantic versioning)', 
@@ -42,26 +57,54 @@ class Plugin
                            'label_menu' => 'Teks yang muncul di Menu?'
                           ];
 
-        $destinantion = ($this->env === 'development_src')?$dest.'/tests/plugins/':$dest.'/plugins/';
-        $template = ($this->env === 'development_src')?$dest.'/tests/template/':$dest.'/vendor/drajat/slims-tarsius/tests/template/';
+        // set destination
+        $destinantionDirectory = ($this->env === 'development_src')?$dest.'/tests/plugins/':$dest.'/plugins/';
+        // setup template directory
+        $templateDirectory = ($this->env === 'development_src')?$dest.'/tests/template/':$dest.'/vendor/drajat/slims-tarsius/tests/template/';
         
-        if (count($pluginName) > 1)
+        // set up custom parameter
+        if (isset($parameter[1]) && preg_match('/\--[a-z]+=/i', $parameter[1]))
+        {
+            $pattern = explode('=', trim($parameter[1], '-'));
+            
+            if (property_exists($this, $pattern[0]) && file_exists($templateDirectory.'/'.$pattern[1].'.Template'))
+            {
+                // set propperty
+                $this->{$pattern[0]} = $pattern[1];
+                // kill other parameter
+                unset($parameter[1]);
+            }
+            else
+            {
+                dg::failedMsg("Template {pointMsg} tidak ada.", $pattern[1]);
+            }
+        }
+
+        if (count($parameter) > 1)
         {
             dg::failedMsg("{pointMsg}", 'Hanya bisa membuat 1 plugin dalam 1 perintah!');
         }
 
-        $pluginName = $pluginName[0];
+        $pluginName = $parameter[0];
 
         // set message
         echo "\nMembuat plugin \e[36m$pluginName\033[0m\n\n";
         // get information, create sampe data and make plugin
         $this->makeSampleData()
              ->makeInteractive($interactiveMap)
-             ->makePlugin($pluginName, $destinantion, $template);
+             ->makePlugin($pluginName, $destinantionDirectory, $templateDirectory);
     }
 
-    public function list($dir, $parameter)
+    /**
+     * List plugin
+     *
+     * @param string $dir
+     * @param array $parameter
+     * @return void
+     */
+    public function list(string $dir, array $parameter)
     {
+        // class check
         if (class_exists('\\SLiMS\\DB'))
         {
             // get database instance
@@ -71,6 +114,7 @@ class Plugin
                 exit("\n");
             }
 
+            // set criteria
             $criteria = '';
             if ($parameter[0] !== 'all')
             {
@@ -81,12 +125,14 @@ class Plugin
             // get data
             $runQuery = $database->query('select * from plugins'.$criteria);
 
+            // check row
             if ($runQuery->num_rows > 0)
             {
                 $listActive = [];
                 $listDisctive = [];
                 while ($data = $runQuery->fetch_assoc())
                 {
+                    // check path
                     if (file_exists($data['path']))
                     {   
                         // slicing
@@ -98,21 +144,37 @@ class Plugin
                         $listActive[] = [$data['id'], '/'.implode('/', $slicePath).'/' ,$plugin];
                     }
                 }
+                // set list data
                 $heading = " No ID\t\t\t\t\tNama Plugin\t\tPath\n";
                 dg::list('Berikut daftar plugin aktif', $listActive, $heading);
+                exit;
             }
+            // set info
+            dg::info('Info', [['TIdak ada data yang tersedia.']]);
+            exit;
+            
         }
+        // set error
+        dg::failedMsg("{pointMsg} tidak ada", 'Namespace \\SLiMS\\DB');
     }
 
-    public function info($dir, $parameter)
+    /**
+     * Get Plugin Information
+     *
+     * @param string $dir
+     * @param array $parameter
+     * @return void
+     */
+    public function info(string $dir, array $parameter)
     {
         if (class_exists('\\SLiMS\\DB'))
         {
             // get database instance
             $database = \SLiMS\DB::getInstance('mysqli');
             // check connection
-            if (mysqli_connect_error()) {
-                exit("\n");
+            if (mysqli_connect_errno()) {
+                // set error
+                dg::failedMsg("Database : {pointMsg}", mysqli_connect_error());
             }
 
             $criteria = '';
@@ -132,7 +194,6 @@ class Plugin
                 {
                     if (file_exists($data['path']))
                     {   
-
                         // parsing plugin data -> took from lib/Plugins.php
                         $file_open = fopen($data['path'], 'r');
                         $raw_data = fread($file_open, 8192);
@@ -148,10 +209,23 @@ class Plugin
                         dg::info('Detail plugin '.$data['id'], $info);
                     }
                 }
+                exit;
             }
+            // set info
+            dg::info('Info', [['TIdak ada data yang tersedia.']]);
+            exit;
         }
+        // set error
+        dg::failedMsg("{pointMsg} tidak ada", 'Namespace \\SLiMS\\DB');
+        exit;
     }
 
+
+    /**
+     * Making Sample Data
+     *
+     * @return object
+     */
     private function makeSampleData()
     {
         if (class_exists('\\SLiMS\\DB'))
@@ -182,10 +256,18 @@ class Plugin
         return $this;
     }
 
-    private function makeInteractive($label)
+    /**
+     * Interactive Question
+     *
+     * @param array $label
+     * @return void
+     */
+    private function makeInteractive(array $label)
     {
+        // check label
         if (is_array($label))
         {
+            // loop
             foreach ($label as $key => $question) {
                 echo "\e[1m$question plugin?\033[0m [tuliskan] ";
                 $this->interactiveResponse[$key] = trim(fgets(STDIN));
@@ -199,17 +281,31 @@ class Plugin
         }
     }
 
-    private function makePlugin($pluginName, $destDir, $template)
+    /**
+     * Make plugin
+     *
+     * @param string $pluginName
+     * @param string $destDir
+     * @param string $template
+     * @return void
+     */
+    private function makePlugin(string $pluginName, string $destDir, string $templateDir)
     {
-        if (!is_dir($destDir.$pluginName))
+        // mpdify string
+        $fixPluginName = ucwords(str_replace('_', ' ',trim($pluginName, '"\' ')));
+        $dirPlugin = strtolower(str_replace(' ', '_', $fixPluginName));
+
+        // check dir
+        if (!is_dir($destDir.$dirPlugin))
         {
-            if (mkdir($destDir.$pluginName, 0755, true))
+            // Make directory
+            if (mkdir($destDir.$dirPlugin, 0755, true))
             {
                 // get file template
-                $dotPlugin = file_get_contents($template.'dot-plugin.Template');
-                $indexPlugin = file_get_contents($template.'index-plugin.Template');
+                $dotPlugin = file_get_contents($templateDir.'dot-plugin.Template');
+                $indexPlugin = file_get_contents($templateDir.$this->template.'.Template');
                 // mutation
-                $this->interactiveResponse['plugin_name'] = strtolower(str_replace(' ', '_', $pluginName));
+                $this->interactiveResponse['plugin_name'] = $fixPluginName;
                 $this->interactiveResponse['date_created'] = date('Y-m-d H:i:s');
 
                 foreach ($this->interactiveResponse as $key => $value) {
@@ -221,7 +317,7 @@ class Plugin
                     else
                     {
                         // remove directory
-                        rmdir($destDir.$pluginName);
+                        rmdir($destDir.$dirPlugin);
                         // set message
                         dg::failedMsg("Parameter {pointMsg} tidak boleh kosong!", $key);
                     }
@@ -229,8 +325,8 @@ class Plugin
 
                 try {
                     // set file
-                    $dotPluginFIle = file_put_contents($destDir.$pluginName.'/'.strtolower(str_replace(' ', '_', $pluginName)).'.plugin.php', $dotPlugin);
-                    $indexPluginFIle = file_put_contents($destDir.$pluginName.'/index.php', $indexPlugin);
+                    $dotPluginFIle = file_put_contents($destDir.$dirPlugin.'/'.strtolower(str_replace(' ', '_', $pluginName)).'.plugin.php', $dotPlugin);
+                    $indexPluginFIle = file_put_contents($destDir.$dirPlugin.'/index.php', $indexPlugin);
 
                     if ($dotPlugin && $indexPlugin)
                     {

@@ -7,11 +7,10 @@
  */
 
 namespace SLiMSTarsius;
-use SLiMSTarsius\{Plugin,Migration,Parser,Docgenerator};
 
 // for production, comment if on development process
 @ini_set('display_errors', false);
-@error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT & ~E_USER_NOTICE & ~E_USER_DEPRECATED);
+@error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT & ~E_USER_NOTICE & ~E_USER_DEPRECATED);
 
 class Tarmagick
 {
@@ -24,7 +23,7 @@ class Tarmagick
         self::getEnvironment(self::$dir);
 
         try {
-            $Plugin = new Plugin(self::$environment);
+            $Plugin = new \SLiMSTarsius\Plugin(self::$environment);
 
             if (method_exists($Plugin, $action))
             {
@@ -35,27 +34,7 @@ class Tarmagick
                 throw new \ErrorException($action);
             }
         } catch (\ErrorException $e) {
-            Docgenerator::failedMsg("Metode {pointMsg} tidak ada!", $e->getMessage());
-        }
-    }
-
-    public static function migration($action)
-    {
-        self::getEnvironment(self::$dir);
-        
-        try {
-            $Migration = new Migration(self::$environment);
-
-            if (method_exists($Migration, $action))
-            {
-                $Migration->$action(self::$dir, self::$parameter);
-            }
-            else
-            {
-                throw new \ErrorException($action);
-            }
-        } catch (\ErrorException $e) {
-            Docgenerator::failedMsg("Metode {pointMsg} tidak ada!", $e->getMessage());
+            \SLiMSTarsius\Docgenerator::failedMsg("Metode {pointMsg} tidak ada!", $e->getMessage());
         }
     }
 
@@ -88,7 +67,7 @@ class Tarmagick
 
     public static function startup($mainDirectory)
     {
-        $parser = (new Parser())->compile();
+        $parser = (new \SLiMSTarsius\Parser())->compile();
 
         if (count($parser->arguments) > 0)
         {
@@ -102,7 +81,7 @@ class Tarmagick
         }
         else
         {
-            Docgenerator::firstMeet();
+            \SLiMSTarsius\Docgenerator::firstMeet();
         }
     }
 }
