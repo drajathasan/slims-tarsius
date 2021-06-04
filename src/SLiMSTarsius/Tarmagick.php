@@ -20,27 +20,14 @@ class Tarmagick
 
     public static function plugin($action)
     {
-        self::getEnvironment(self::$dir);
-
-        try {
-            $Plugin = new \SLiMSTarsius\Plugin(self::$environment);
-
-            if (method_exists($Plugin, $action))
-            {
-                $Plugin->$action(self::$dir, self::$parameter);
-            }
-            else
-            {
-                throw new \ErrorException($action);
-            }
-        } catch (\ErrorException $e) {
-            \SLiMSTarsius\Docgenerator::failedMsg("Metode {pointMsg} tidak ada!", $e->getMessage());
-        }
+        // Start to ignition
+        self::makeIgnition('\SLiMSTarsius\Plugin', $action);
     }
 
     public static function module($action)
     {
-        echo "Fitur akan hadir di masa mendatang :D, stay tune ya! \n";
+        // Start to ignition
+        self::makeIgnition('\SLiMSTarsius\Module', $action);
     }
 
     public static function template($action)
@@ -65,6 +52,33 @@ class Tarmagick
         }
     }
 
+    public static function makeIgnition($namespace, $action)
+    {
+        self::getEnvironment(self::$dir);
+
+        try {
+            // check class
+            if (!class_exists($namespace)) 
+            {
+                \SLiMSTarsius\Docgenerator::failedMsg("Class {pointMsg} tidak ada! pastikan class tersebut anda!", $namespace);
+            }
+
+            // set new instances
+            $Instance = new $namespace(self::$environment);
+
+            if (method_exists($Instance, $action) && (is_array(self::$parameter)))
+            {
+                $Instance->$action(self::$dir, self::$parameter);
+            }
+            else
+            {
+                throw new \ErrorException($action);
+            }
+        } catch (\ErrorException $e) {
+            \SLiMSTarsius\Docgenerator::failedMsg("Metode {pointMsg} tidak ada! atau parameter tidak boleh kosong!", $e->getMessage());
+        }
+    }
+
     public static function startup($mainDirectory)
     {
         $parser = (new \SLiMSTarsius\Parser())->compile();
@@ -77,6 +91,10 @@ class Tarmagick
                 self::$dir = $mainDirectory;
                 self::$parameter = $parser->arguments['parameter'];
                 return self::$method($parser->arguments['method'][1]);
+            }
+            else
+            {
+                \SLiMSTarsius\Docgenerator::failedMsg("Metode {pointMsg} tidak ada!", $method);
             }
         }
         else

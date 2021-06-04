@@ -20,7 +20,7 @@ echo " _____              _
   | | (_| | |  \__ \ | |_| \__ \
   |_|\__,_|_|  |___/_|\__,_|___/                                            
 ";
-                echo "\t\t\t v1.2.3 \n";
+                echo "\t\t\t v".TAR_VERSION." \n";
     }
     public static function firstMeet()
     {
@@ -43,12 +43,12 @@ echo " _____              _
         echo "\n\e[36m  --plugin \033[0m";
         echo "\n\e[32m   --plugin:create \033[0m\tMembuat kerangka dasar plugin (mode non-hook)";
         echo "\n\e[32m   --plugin:list \033[0m\tMenampilkan plugin tersedia";
-        echo "\n\e[32m   --plugin:info \033[0m\tMenampilkan informasi plugin";
+        echo "\n\e[32m   --plugin:info \033[0m\tMenampilkan informasi plugin\n";
         /* Module */
         echo "\n\e[36m  --module \033[0m";
-        echo "\n\e[32m   --module:create \033[0m\tMembuat kerangka dasar module (fitur mendatang)";
-        echo "\n\e[32m   --module:list \033[0m\tMenampilkan module tersedia (fitur mendatang)";
-        echo "\n\e[32m   --module:info \033[0m\tMenampilkan informasi module (fitur mendatang)\n";
+        echo "\n\e[32m   --module:create \033[0m\tMembuat kerangka dasar module";
+        echo "\n\e[32m   --module:list \033[0m\tMenampilkan module tersedia";
+        echo "\n\e[32m   --module:info \033[0m\tMenampilkan informasi module\n";
         /* Template */
         echo "\n\e[36m  --template \033[0m\t(fitur mendatang)\n";
         /* Library */
@@ -62,7 +62,7 @@ echo " _____              _
         echo "\n";
     }
 
-    public static function list($label, $data, $heading = '')
+    public static function list($label, $data, $heading = '', $type = 'plugin')
     {
         echo "\n\e[33m $label \033[0m\n\n";
         echo $heading;
@@ -73,7 +73,7 @@ echo " _____              _
         }
         $numPlugin = count($data);
         echo " --------------------------------------------------------------------------------------------------------\n";
-        echo "\n Ditemukan \e[1m$numPlugin\033[0m plugin\n";
+        echo "\n Ditemukan \e[1m$numPlugin\033[0m $type\n";
         echo "\n";
     }
 

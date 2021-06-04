@@ -3,7 +3,7 @@
  * @author Drajat Hasan
  * @email drajathasan20@gmail.com
  * @create date 2020-12-26 17:02:45
- * @modify date 2021-06-04 14:29:41
+ * @modify date 2021-06-04 14:29:39
  */
 
 namespace SLiMSTarsius;
@@ -15,17 +15,17 @@ if (file_exists(DIR.'/sysconfig.inc.php') && file_exists(DIR.'/config/sysconfig.
 {
     // set INDEX_AUTH
     define('INDEX_AUTH', '1');
+    // set MWB take from sysconfig.inc.php
+    $temp_senayan_web_root_dir = preg_replace('@admin.*@i', '', str_replace('\\', '/', dirname(@$_SERVER['PHP_SELF'])));
+    define('SWB', $temp_senayan_web_root_dir.(preg_match('@\/$@i', $temp_senayan_web_root_dir)?'':'/'));
+    define('MWB', SWB.'modules/');
     // load SLiMS database profile and autoload
     require DIR.'/config/sysconfig.local.inc.php';
     require DIR.'/lib/autoload.php';
 }
 
-class Plugin
+class Module
 {
-    public $env;
-    public $interactiveResponse;
-    public $template = 'index-plugin';
-    
     /**
      * Contructor
      *
@@ -48,51 +48,32 @@ class Plugin
     public function create(string $dest, array $parameter)
     {
         // setup interactive question
-        $interactiveMap = ['plugin_uri' => 'Plugin URI (Alamat website)', 
+        $interactiveMap = [
+                           'module_uri' => 'Module URI (Alamat website)', 
                            'description' => 'Description', 
                            'version' => 'Version (Minimal gunakan semantic versioning)', 
                            'author' => 'Author (Pembuat)', 
-                           'author_uri' => 'Author URI (Halaman profil pembuat)',
-                           'target_module' => 'Modul tujuan',
-                           'label_menu' => 'Teks yang muncul di Menu?'
+                           'author_uri' => 'Author URI (Halaman profil pembuat)'
                           ];
 
         // set destination
-        $destinantionDirectory = ($this->env === 'development_src')?$dest.'/tests/plugins/':$dest.'/plugins/';
+        $destinantionDirectory = ($this->env === 'development_src')?$dest.'/tests/module/':$dest.'/admin/modules/';
         // setup template directory
         $templateDirectory = ($this->env === 'development_src')?$dest.'/tests/template/':$dest.'/vendor/drajat/slims-tarsius/tests/template/';
 
-        // set up custom parameter
-        if (isset($parameter[1]) && preg_match('/\--[a-z]+=/i', $parameter[1]))
-        {
-            $pattern = explode('=', trim($parameter[1], '-'));
-            
-            if (property_exists($this, $pattern[0]) && file_exists($templateDirectory.'/'.$pattern[1].'.Template'))
-            {
-                // set propperty
-                $this->{$pattern[0]} = $pattern[1];
-                // kill other parameter
-                unset($parameter[1]);
-            }
-            else
-            {
-                dg::failedMsg("Template {pointMsg} tidak ada.", $pattern[1]);
-            }
-        }
-
         if (count($parameter) > 1)
         {
-            dg::failedMsg("{pointMsg}", 'Hanya bisa membuat 1 plugin dalam 1 perintah!');
+            dg::failedMsg("{pointMsg}", 'Hanya bisa membuat 1 module dalam 1 perintah!');
         }
 
-        $pluginName = $parameter[0];
+        $moduleName = $parameter[0];
 
         // set message
-        echo "\nMembuat plugin \e[36m$pluginName\033[0m\n\n";
+        echo "\nMembuat module \e[36m$moduleName\033[0m\n\n";
         // get information, create sampe data and make plugin
         $this->makeSampleData()
              ->makeInteractive($interactiveMap)
-             ->makePlugin($pluginName, $destinantionDirectory, $templateDirectory);
+             ->makeModule($moduleName, $destinantionDirectory, $templateDirectory);
     }
 
     /**
@@ -120,11 +101,11 @@ class Plugin
             if ($parameter[0] !== 'all')
             {
                 $keyword  = $database->escape_string($parameter[0]);
-                $criteria = " where id = '$keyword' OR path LIKE '%$keyword%'";
+                $criteria = " where module_name = '$keyword' OR  module_desc LIKE '%$keyword%'";
             }
 
             // get data
-            $runQuery = $database->query('select * from plugins'.$criteria);
+            $runQuery = $database->query('select * from mst_module'.$criteria);
 
             // check row
             if ($runQuery->num_rows > 0)
@@ -133,21 +114,17 @@ class Plugin
                 $listDisctive = [];
                 while ($data = $runQuery->fetch_assoc())
                 {
-                    // check path
-                    if (file_exists($data['path']))
+                    if (file_exists(DIR.'/admin/modules/'.$data['module_path'].'/module.info.php'))
                     {   
-                        // slicing
-                        $slicePath = explode('/', trim($data['path'], '/'));
-                        // get plugin name
-                        $plugin = isset($slicePath[count($slicePath) - 1])?$slicePath[count($slicePath) - 1]:'?';
-                        unset($slicePath[count($slicePath) - 1]);
+                        include_once DIR.'/admin/modules/'.$data['module_path'].'/module.info.php';
                         // store into array
-                        $listActive[] = [$data['id'], '/'.implode('/', $slicePath).'/' ,$plugin];
+                        $moduleName = explode(' : ', $info[0][0]);
+                        $listActive[] = [$moduleName[1]."\t\t", '/admin/modules/'.$data['module_path']];
                     }
                 }
                 // set list data
-                $heading = " No ID\t\t\t\t\tNama Plugin\t\tPath\n";
-                dg::list('Berikut daftar plugin aktif', $listActive, $heading);
+                $heading = " No Nama Module\t\t\t\t\tPath\t\n";
+                dg::list('Berikut daftar module custom aktif', $listActive, $heading, 'module');
                 exit;
             }
             // set info
@@ -181,33 +158,25 @@ class Plugin
             $criteria = '';
             if ($parameter[0] !== 'all')
             {
+                // escape
                 $keyword  = $database->escape_string($parameter[0]);
-                $criteria = " where id = '$keyword' OR path LIKE '%$keyword%'";
+                $criteria = " where module_name = '$keyword' OR  module_desc LIKE '%$keyword%'";
             }
 
             // get data
-            $runQuery = $database->query('select * from plugins'.$criteria);
+            $runQuery = $database->query('select * from mst_module'.$criteria);
 
             if ($runQuery->num_rows > 0)
             {
                 $info = [];
                 while ($data = $runQuery->fetch_assoc())
                 {
-                    if (file_exists($data['path']))
+                    if (file_exists(DIR.'/admin/modules/'.$data['module_path'].'/module.info.php'))
                     {   
-                        // parsing plugin data -> took from lib/Plugins.php
-                        $file_open = fopen($data['path'], 'r');
-                        $raw_data = fread($file_open, 8192);
-                        fclose($file_open);
-
-                        preg_match('|Plugin Name:(.*)$|mi', $raw_data, $info[0]);
-                        preg_match('|Plugin URI:(.*)$|mi', $raw_data, $info[1]);
-                        preg_match('|Version:(.*)|i', $raw_data, $info[2]);
-                        preg_match('|Description:(.*)$|mi', $raw_data, $info[3]);
-                        preg_match('|Author:(.*)$|mi', $raw_data, $info[4]);
-                        preg_match('|Author URI:(.*)$|mi', $raw_data, $info[5]);
+                        // include module info
+                        include_once DIR.'/admin/modules/'.$data['module_path'].'/module.info.php';
                         // make detail
-                        dg::info('Detail plugin '.$data['id'], $info);
+                        dg::info('Detail module custom '.$data['id'], $info);
                     }
                 }
                 exit;
@@ -238,7 +207,7 @@ class Plugin
                 dg::failedMsg('Galat Database : {pointMsg} ', mysqli_connect_error());
             }
             // run query
-            $database->query("CREATE TABLE IF NOT EXISTS `dummy_plugin` (
+            $database->query("CREATE TABLE IF NOT EXISTS `dummy_module` (
                         `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY, 
                         `kolom1` varchar(20) NULL,
                         `kolom2` varchar(20) NULL,
@@ -251,10 +220,39 @@ class Plugin
                 dg::failedMsg('Gagal membuat {pointMsg} karena : '.$database->error, 'SampleData');
             }
             // insert data
-            @$database->query("INSERT IGNORE INTO `dummy_plugin` (`id`, `kolom1`, `kolom2`, `kolom3`) VALUES ('1', 'Test', 'Test', 'Test');");
+            @$database->query("INSERT IGNORE INTO `dummy_module` (`id`, `kolom1`, `kolom2`, `kolom3`) VALUES ('1', 'Test', 'Test', 'Test');");
         }
         // object
         return $this;
+    }
+
+    private function makeModuleData($data)
+    {
+        if (class_exists('\\SLiMS\\DB'))
+        {
+            // get database instance
+            $database = \SLiMS\DB::getInstance('mysqli');
+            // check connection
+            if (mysqli_connect_error()) {
+                dg::failedMsg('Galat Database : {pointMsg} ', mysqli_connect_error());
+            }
+
+            $valueQuery = [];
+            foreach ($data as $value) {
+                $valueQuery[] = $database->escape_string($value);
+            }
+            
+            $filteredValue = '\''.implode('\', \'', $valueQuery).'\'';
+
+            // run query
+            $insertModule = $database->query("INSERT INTO `mst_module` (`module_name`, `module_path`, `module_desc`) VALUES ($filteredValue)");
+
+            if ($insertModule)
+            {
+                $database->query("INSERT INTO `group_access` (`group_id`, `module_id`, `r`,`w`) VALUES (1, $database->insert_id, 1,1)");
+            }
+            
+        }
     }
 
     /**
@@ -270,9 +268,11 @@ class Plugin
         {
             // loop
             foreach ($label as $key => $question) {
-                echo "\e[1m$question plugin?\033[0m [tuliskan] ";
+                echo "\e[1m$question module?\033[0m [tuliskan] ";
                 $this->interactiveResponse[$key] = trim(fgets(STDIN));
             }
+            echo "\e[1mOtomatis aktifkan module?\033[0m [Y/n] ";
+            $this->interactiveResponse['auto_active'] = trim(fgets(STDIN));
 
             return $this;
         }
@@ -290,35 +290,39 @@ class Plugin
      * @param string $template
      * @return void
      */
-    private function makePlugin(string $pluginName, string $destDir, string $templateDir)
+    private function makeModule(string $moduleName, string $destDir, string $templateDir)
     {
         // mpdify string
-        $fixPluginName = ucwords(str_replace('_', ' ',trim($pluginName, '"\' ')));
-        $dirPlugin = strtolower(str_replace(' ', '_', $fixPluginName));
+        $fixModuleName = ucwords(str_replace('_', ' ',trim($moduleName, '"\' ')));
+        $dirModule = strtolower(str_replace(' ', '_', $fixModuleName));
 
         // check dir
-        if (!is_dir($destDir.$dirPlugin))
+        if (!is_dir($destDir.$dirModule))
         {
             // Make directory
-            if (mkdir($destDir.$dirPlugin, 0755, true))
+            if (mkdir($destDir.$dirModule, 0755, true))
             {
                 // get file template
-                $dotPlugin = file_get_contents($templateDir.'dot-plugin.Template');
-                $indexPlugin = file_get_contents($templateDir.$this->template.'.Template');
+                $indexModule = file_get_contents($templateDir.'index-module.Template');
+                $submenuModule = file_get_contents($templateDir.'submenu.Template');
+                $infoModule = file_get_contents($templateDir.'module-info.Template');
                 // mutation
-                $this->interactiveResponse['plugin_name'] = $fixPluginName;
+                $this->interactiveResponse['module_name'] = $fixModuleName;
+                $this->interactiveResponse['path_name'] = $dirModule;
+                $this->interactiveResponse['index_path'] = MWB.$dirModule.'/index.php';
                 $this->interactiveResponse['date_created'] = date('Y-m-d H:i:s');
 
                 foreach ($this->interactiveResponse as $key => $value) {
                     if (!empty(trim($this->interactiveResponse[$key])))
                     {
-                        $dotPlugin = str_replace('{'.$key.'}', $value, $dotPlugin);
-                        $indexPlugin = str_replace('{'.$key.'}', $value, $indexPlugin);
+                        $indexModule = str_replace('{'.$key.'}', $value, $indexModule);
+                        $submenuModule = str_replace('{'.$key.'}', $value, $submenuModule);
+                        $infoModule = str_replace('{'.$key.'}', $value, $infoModule);
                     }
                     else
                     {
                         // remove directory
-                        rmdir($destDir.$dirPlugin);
+                        rmdir($destDir.$dirModule);
                         // set message
                         dg::failedMsg("Parameter {pointMsg} tidak boleh kosong!", $key);
                     }
@@ -326,25 +330,31 @@ class Plugin
 
                 try {
                     // set file
-                    $dotPluginFIle = file_put_contents($destDir.$dirPlugin.'/'.strtolower(str_replace(' ', '_', $pluginName)).'.plugin.php', $dotPlugin);
-                    $indexPluginFIle = file_put_contents($destDir.$dirPlugin.'/index.php', $indexPlugin);
+                    $indexModuleFile = file_put_contents($destDir.$dirModule.'/index.php', $indexModule);
+                    $submenuModuleFile = file_put_contents($destDir.$dirModule.'/submenu.php', $submenuModule);
+                    $authorFile = file_put_contents($destDir.$dirModule.'/module.info.php', $infoModule);
 
-                    if ($dotPluginFIle && $indexPluginFIle)
+                    if ($indexModuleFile && $submenuModuleFile && $authorFile)
                     {
-                        dg::successMsg("{pointMsg}", "\nBerhasil membuat plugin $fixPluginName");
+                        // set up module
+                        $moduleData = [$dirModule,$dirModule, $this->interactiveResponse['description']];
+                        if (strtolower($this->interactiveResponse['auto_active']) === 'y')  $this->makeModuleData($moduleData);
+
+                        // set success message
+                        dg::successMsg("{pointMsg}", "\nBerhasil membuat module $fixModuleName");
                     }
                 } catch (\ErrorException $e) {
-                    dg::failedMsg("Gagal membuat plugin {pointMsg} : $e->getMessage()", $fixPluginName);
+                    dg::failedMsg("Gagal membuat module {pointMsg} : $e->getMessage()", $fixModuleName);
                 }
             }
             else
             {
-                dg::failedMsg("{pointMsg}", "Gagal membuat direktori plugin");
+                dg::failedMsg("{pointMsg}", "Gagal membuat direktori module");
             }
         }
         else
         {
-            dg::failedMsg("{pointMsg}", "Plugin sudah ada. Ingin membuat plugin lagi? Hapus plugin yang sudah ada.");
+            dg::failedMsg("{pointMsg}", "Module sudah ada. Ingin membuat module lagi? Hapus module yang sudah ada.");
         }
     }
 }
