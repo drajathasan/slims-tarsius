@@ -11,7 +11,7 @@
     ],
     "minimum-stability": "dev",
     "require": {
-	"php": ">=7.3.0"
+	"php": ">=7.4.0"
     },
     "autoload": {
         "psr-0": {
@@ -19,8 +19,8 @@
         }
     },
     "scripts": {
-	"post-update-cmd": [
-	  "php -r \"copy(__DIR__.'/vendor/drajat/slims-tarsius/tests/tarsius', __DIR__.'/tarsius');\""		
+	    "post-update-cmd": [
+	        "php -r \"copy(__DIR__.'/vendor/drajat/slims-tarsius/tests/tarsius', __DIR__.'/tarsius');\""		
         ]	
     }
 }

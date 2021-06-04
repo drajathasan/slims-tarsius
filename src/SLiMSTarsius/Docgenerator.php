@@ -20,7 +20,7 @@ echo " _____              _
   | | (_| | |  \__ \ | |_| \__ \
   |_|\__,_|_|  |___/_|\__,_|___/                                            
 ";
-                echo "\t\t\t v1.2.2 \n";
+                echo "\t\t\t v1.2.3 \n";
     }
     public static function firstMeet()
     {
