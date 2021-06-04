@@ -234,7 +234,7 @@ class Plugin
             $database = \SLiMS\DB::getInstance('mysqli');
             // check connection
             if (mysqli_connect_error()) {
-                exit("\n");
+                dg::failedMsg('Galat Database : {pointMsg} '.mysqli_connect_error());
             }
             // run query
             $database->query("CREATE TABLE IF NOT EXISTS `dummy_plugin` (
