@@ -1,0 +1,10 @@
+<?php
+
+$info= [
+    ['Nama Modul : {module_name}'],
+    ['Alamat Website : {module_uri}'], 
+    ['Deskripsi : {description}'], 
+    ['Versi : {version}'], 
+    ['Pengembang : {author}'], 
+    ['Alamat Website Pengembang : {author_uri}']
+];
