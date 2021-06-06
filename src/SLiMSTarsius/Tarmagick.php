@@ -8,6 +8,9 @@
 
 namespace SLiMSTarsius;
 
+// shortcuting Docgenerator namespace
+use \SLiMSTarsius\Docgenerator as dg;
+
 // for production, comment if on development process
 @ini_set('display_errors', false);
 @error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT & ~E_USER_NOTICE & ~E_USER_DEPRECATED);
@@ -60,7 +63,7 @@ class Tarmagick
             // check class
             if (!class_exists($namespace)) 
             {
-                \SLiMSTarsius\Docgenerator::failedMsg("Class {pointMsg} tidak ada! pastikan class tersebut anda!", $namespace);
+                dg::failedMsg("Class {pointMsg} tidak ada! pastikan class tersebut anda!", $namespace);
             }
 
             // set new instances
@@ -75,7 +78,7 @@ class Tarmagick
                 throw new \ErrorException($action);
             }
         } catch (\ErrorException $e) {
-            \SLiMSTarsius\Docgenerator::failedMsg("Metode {pointMsg} tidak ada! atau parameter tidak boleh kosong!", $e->getMessage());
+            dg::failedMsg("Metode {pointMsg} tidak ada! atau parameter tidak boleh kosong!", $e->getMessage());
         }
     }
 
@@ -94,12 +97,12 @@ class Tarmagick
             }
             else
             {
-                \SLiMSTarsius\Docgenerator::failedMsg("Metode {pointMsg} tidak ada!", $method);
+                dg::failedMsg("Metode {pointMsg} tidak ada!", $method);
             }
         }
         else
         {
-            \SLiMSTarsius\Docgenerator::firstMeet();
+            dg::firstMeet();
         }
     }
 }
