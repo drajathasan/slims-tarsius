@@ -1,4 +1,4 @@
-# SLiMS Tarsius
+# SLiMS Tarsius (paket ini ditinggalkan dan ditingkatkan ke zein/tarius)
 
 Sebuah perkakas untuk [SLiMS](https://github.com/slims/) yang digunakan sebagai *code generator* seperti membuat kerangka dasar dari plugin, template, modul, library, dan rest-api.
 
